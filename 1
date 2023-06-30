@@ -1,0 +1,82 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+struct Restaurante {
+    char nome[100];
+    char endereco[100];
+    float precoMedio;
+    char tipoComida[100];
+    struct Restaurante* proximo;
+};
+
+void solicitarDadosRestaurante(struct Restaurante* restaurante) {
+    printf("Digite o nome do restaurante:");
+    scanf("%s", restaurante->nome);
+
+    printf("Digite o endereço:");
+    scanf("%s", restaurante->endereco);
+
+    printf("Digite o preço médio: ");
+    scanf("%f", &restaurante->precoMedio);
+
+    printf("Digite o tipo de comida:");
+    scanf("%s", restaurante->tipoComida);
+}
+
+void listarDadosRestaurantes(struct Restaurante* inicio) {
+    struct Restaurante* atual = inicio;
+
+    printf("Dados dos restaurantes:\n");
+
+    while (atual != NULL) {
+        printf("Restaurante: %s\n", atual->nome);
+        printf("Endereço: %s\n", atual->endereco);
+        printf("Preço médio: %.2f\n", atual->precoMedio);
+        printf("Tipo de comida: %s\n\n", atual->tipoComida);
+
+        atual = atual->proximo;
+    }
+}
+
+int main() {
+    struct Restaurante* inicio = NULL;
+    struct Restaurante* novo = NULL;
+    char adicionarMais;
+
+    do {
+        novo = (struct Restaurante*)malloc(sizeof(struct Restaurante));
+        if (novo == NULL) {
+            printf("Erro ao alocar memória.\n");
+            return 1;
+        }
+      
+        solicitarDadosRestaurante(novo);
+
+        novo->proximo = NULL;
+
+        if (inicio == NULL) {
+            inicio = novo;
+        } else {
+            struct Restaurante* atual = inicio;
+            while (atual->proximo != NULL) {
+                atual = atual->proximo;
+            }
+            atual->proximo = novo;
+        }
+
+        printf("Deseja adicionar mais ? (s/n): ");
+        scanf(" %c", &adicionarMais);
+    } while (adicionarMais == 's' || adicionarMais == 'S');
+
+    listarDadosRestaurantes(inicio);
+
+    struct Restaurante* atual = inicio;
+    while (atual != NULL) {
+        struct Restaurante* proximo = atual->proximo;
+        free(atual);
+        atual = proximo;
+    }
+
+    return 0;
+}
