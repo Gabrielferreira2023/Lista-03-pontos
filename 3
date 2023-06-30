@@ -1,0 +1,170 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+typedef struct {
+    char proprietario[100];
+    char combustivel[10];
+    char modelo[100];
+    char cor[100];
+    char chassi[100];
+    int ano;
+    char placa[8];
+} Veiculo;
+
+typedef struct No {
+    Veiculo veiculo;
+    struct No* prox;
+} NoLista;
+
+void inserirVeiculo(NoLista** lista, Veiculo veiculo) {
+    NoLista* novoNo = (NoLista*)malloc(sizeof(NoLista));
+    novoNo->veiculo = veiculo;
+    novoNo->prox = NULL;
+
+    if (*lista == NULL) {
+        *lista = novoNo;
+    } else {
+        NoLista* atual = *lista;
+        while (atual->prox != NULL) {
+            atual = atual->prox;
+        }
+        atual->prox = novoNo;
+    }
+}
+
+void listarProprietariosDiesel2010(NoLista* lista) {
+    printf("Proprietários de veículosa partir de 2010 posterior movidos a diesel:\n");
+    while (lista != NULL) {
+        Veiculo veiculo = lista->veiculo;
+        if (veiculo.ano >= 2010 && strcmp(veiculo.combustivel, "diesel") == 0) {
+            printf("Proprietário: %s\n", veiculo.proprietario);
+        }
+        lista = lista->prox;
+    }
+}
+
+void listarPlacasJ(NoLista* lista) {
+    printf("Placas que começam com J e terminam com 0, 2, 4 ou 7, e os proprietários:\n");
+    while (lista != NULL) {
+        Veiculo veiculo = lista->veiculo;
+        if (veiculo.placa[0] == 'J' && (veiculo.placa[4] == '0' || veiculo.placa[4] == '2' || veiculo.placa[4] == '4' || veiculo.placa[4] == '7')) {
+            printf("Placa: %s, Proprietário: %s\n", veiculo.placa, veiculo.proprietario);
+        }
+        lista = lista->prox;
+    }
+}
+
+void listarModeloCorPlacasVogalSomaPar(NoLista* lista) {
+    printf("Modelo e cor dos veículos com placas cuja segunda letra é uma vogal e a soma é um número par:\n");
+    while (lista != NULL) {
+        Veiculo veiculo = lista->veiculo;
+        char segundaLetra = veiculo.placa[1];
+        int somaNumeros = (veiculo.placa[3] - '0') + (veiculo.placa[4] - '0') + (veiculo.placa[5] - '0') + (veiculo.placa[6] - '0');
+
+        if (strchr("aeiouAEIOU", segundaLetra) != NULL && somaNumeros % 2 == 0) {
+            printf("Modelo: %s, Cor: %s\n", veiculo.modelo, veiculo.cor);
+        }
+
+        lista = lista->prox;
+    }
+}
+
+void trocarProprietarioPorChassi(NoLista** lista, char* chassi, char* novoProprietario) {
+    NoLista* atual = *lista;
+    while (atual != NULL) {
+        Veiculo veiculo = atual->veiculo;
+        int i;
+        int placaValida = 1;
+
+        for (i = 3; i < 7; i++) {
+            if (veiculo.placa[i] == '0') {
+                placaValida = 0;
+                break;
+            }
+        }
+
+        if (placaValida && strcmp(veiculo.chassi, chassi) == 0) {
+            strcpy(veiculo.proprietario, novoProprietario);
+            printf("Proprietário atualizado com sucesso!\n");
+            return;
+        }
+
+        atual = atual->prox;
+    }
+
+    printf("Veículo com o número de chassi fornecido não encontrado.\n");
+}
+
+void liberarLista(NoLista** lista) {
+    NoLista* atual = *lista;
+    while (atual != NULL) {
+        NoLista* proximo = atual->prox;
+        free(atual);
+        atual = proximo;
+    }
+    *lista = NULL;
+}
+
+int main() {
+    NoLista* lista = NULL;
+    int opcao;
+
+    while (1) {
+        printf("Selecione uma opção:\n");
+        printf("1. Inserir veículo\n");
+        printf("2. Listar proprietários de veículos a partir de 2010 e movidos a diesel\n");
+        printf("3. Listar placas que começam com a letra J e terminam com 0, 2, 4 ou 7\n");
+        printf("4. Listar modelo e cor dos veículos com placas cuja segunda letra é uma vogal e a soma é um número par\n");
+        printf("5. Trocar proprietário de um veículo por chassi\n");
+        printf("6. Sair\n");
+        printf("Opção: ");
+        scanf("%d", &opcao);
+
+        if (opcao == 1) {
+            Veiculo veiculo;
+
+            printf("Proprietário: ");
+            scanf(" %[^\n]", veiculo.proprietario);
+            printf("Combustível (álcool, diesel ou gasolina): ");
+            scanf(" %[^\n]", veiculo.combustivel);
+            printf("Modelo: ");
+            scanf(" %[^\n]", veiculo.modelo);
+            printf("Cor: ");
+            scanf(" %[^\n]", veiculo.cor);
+            printf("Nº chassi: ");
+            scanf(" %[^\n]", veiculo.chassi);
+            printf("Ano: ");
+            scanf("%d", &veiculo.ano);
+            printf("Placa: ");
+            scanf(" %[^\n]", veiculo.placa);
+
+            inserirVeiculo(&lista, veiculo);
+        } else if (opcao == 2) {
+            listarProprietariosDiesel2010(lista);
+        } else if (opcao == 3) {
+            listarPlacasJ(lista);
+        } else if (opcao == 4) {
+            listarModeloCorPlacasVogalSomaPar(lista);
+        } else if (opcao == 5) {
+            char chassi[100];
+            char novoProprietario[100];
+
+            printf("Número do chassi do veículo: ");
+            scanf(" %[^\n]", chassi);
+            printf("Novo proprietário: ");
+            scanf(" %[^\n]", novoProprietario);
+
+            trocarProprietarioPorChassi(&lista, chassi, novoProprietario);
+        } else if (opcao == 6) {
+            liberarLista(&lista);
+            break;
+        } else {
+            printf("Opção inválida. Tente novamente.\n");
+        }
+
+        printf("\n");
+    }
+
+    return 0;
+}
